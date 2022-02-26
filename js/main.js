@@ -1,10 +1,10 @@
-import * as THREE from '/lib/three-0.138.module.js'
-import * as MY3 from '/js/MY3.js'
+import * as THREE from '../lib/three-0.138.module.js'
+import * as MY3 from './MY3.js'
 // VR support
-import { VRButton } from '/lib/VRButton.js';
+import { VRButton } from '../lib/VRButton.js';
 // import { XRControllerModelFactory } from '/lib/XRControllerModelFactory.js';
 // objects
-import { BoxLineGeometry } from '/lib/BoxLineGeometry.js';
+import { BoxLineGeometry } from '../lib/BoxLineGeometry.js';
 
 const three = new Threestrap.Bootstrap();
 // export refs to Chrome console

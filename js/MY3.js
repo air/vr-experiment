@@ -1,4 +1,4 @@
-import * as THREE from '/lib/three-0.138.module.js';
+import * as THREE from '../lib/three-0.138.module.js';
 
 // v2 of MY3 designed to run with threestrap.
 

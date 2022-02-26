@@ -1,4 +1,4 @@
-import { VRButton } from '/js/VRButton.js';
+import { VRButton } from '/lib/VRButton.js';
 
 const three = new Threestrap.Bootstrap();
 

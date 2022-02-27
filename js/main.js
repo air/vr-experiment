@@ -2,7 +2,7 @@ import * as THREE from '../lib/three-0.138.module.js'
 import * as MY3 from './MY3.js'
 // VR support
 import { VRButton } from '../lib/VRButton.js';
-// import { XRControllerModelFactory } from '/lib/XRControllerModelFactory.js';
+import { XRControllerModelFactory } from '/lib/XRControllerModelFactory.js';
 // objects
 import { BoxLineGeometry } from '../lib/BoxLineGeometry.js';
 
@@ -26,6 +26,18 @@ function init()
   let axesHelper = new THREE.AxesHelper(5);
   three.scene.add(axesHelper);
 
+  // skyColor, groundColor
+  let hemiLight = new THREE.HemisphereLight(0x6060F0, 0xA0A040);
+  three.scene.add(hemiLight);
+  let hemiHelper = new THREE.HemisphereLightHelper(hemiLight, 1);
+  three.scene.add(hemiHelper);
+
+  let dirLight = new THREE.DirectionalLight(0xffffff);
+  dirLight.position.set(3, 3, 3);//.normalize();
+  three.scene.add(dirLight);
+  let dirHelper = new THREE.DirectionalLightHelper(dirLight, 1);
+  three.scene.add(dirHelper);
+
   // test scene
   three.scene.background = new THREE.Color(0x505050);
   cube.position.set(1,1,1);
@@ -42,15 +54,17 @@ function init()
   room.geometry.translate(0, 3, 0);
   three.scene.add(room);
 
-  // VR button
+  // VR setup
   document.body.appendChild(VRButton.createButton(three.renderer));
   // "tell your instance of WebGLRenderer to enable XR rendering"
   three.renderer.xr.enabled = true;
+  // is this important to work on Quest? from ballshooter.js. Has major effect on colors/lighting
+  three.renderer.outputEncoding = THREE.sRGBEncoding;
 }
 
 three.on('update', function () {
   cube.rotateY(0.01);
-  var t = three.Time.now;
+  let t = three.Time.now;
   three.camera.position.set(Math.cos(t)*3, 1.5, Math.sin(t)*3);
   three.camera.lookAt(new THREE.Vector3(1,1,1));
 });

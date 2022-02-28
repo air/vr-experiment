@@ -1,5 +1,7 @@
 import * as THREE from '../lib/three-0.138.module.js'
 import * as MY3 from './MY3.js'
+import * as FirstPersonControls from '../lib/FirstPersonControls.js'
+
 // VR support
 import { VRButton } from '../lib/VRButton.js';
 import { XRControllerModelFactory } from '/lib/XRControllerModelFactory.js';
@@ -13,8 +15,10 @@ window.MY3 = MY3;
 
 // globals
 const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff3333 }));
+let wasdControls;
 
 init();
+initVR();
 // kick off animation. can't use window.requestAnimationFrame so:
 three.renderer.setAnimationLoop(function () {
   three.renderer.render(three.scene, three.camera);
@@ -26,7 +30,7 @@ three.renderer.setAnimationLoop(function () {
 function buildController(data)
 {
   let geometry, material;
-  switch (data.targetRayMode)
+  switch (data.targetRayMode) // from XRInputSource https://developer.mozilla.org/en-US/docs/Web/API/XRInputSource/targetRayMode
   {
     case 'tracked-pointer':
       geometry = new THREE.BufferGeometry();
@@ -43,9 +47,7 @@ function buildController(data)
 
 function init()
 {
-  // helpers
-  const axesHelper = new THREE.AxesHelper(5);
-  three.scene.add(axesHelper);
+  three.scene.add(new THREE.AxesHelper(5));
 
   const hemiLight = new THREE.HemisphereLight(0x6060F0, 0xA0A040); // skyColor, groundColor
   three.scene.add(hemiLight);
@@ -62,7 +64,7 @@ function init()
   three.scene.background = new THREE.Color(0x505050);
   cube.position.set(1,1,1);
   three.scene.add(cube);
-  three.camera.position.set(1, 1, 2);
+  three.camera.position.set(4, 0, 4);
   three.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
   // room
@@ -70,14 +72,23 @@ function init()
     new BoxLineGeometry(10, 10, 10, 10, 10, 10), // width, height, depth, # of segments per axis
     new THREE.LineBasicMaterial({ color: 0x808080 })
   );
-  room.geometry.translate(0, 3, 0);
+  // room.geometry.translate(0, 0, 0); // starts centred on origin
   three.scene.add(room);
 
+  // is this important to work on Quest? from ballshooter.js. Has major effect on colors/lighting
+  three.renderer.outputEncoding = THREE.sRGBEncoding;
+
+  wasdControls = new FirstPersonControls.FirstPersonControls(three.camera, document);
+
+  wasdControls.lookSpeed = 0.2;
+  wasdControls.movementSpeed = 2;
+}
+
+function initVR()
+{
   // VR: add the Enter VR button
   document.body.appendChild(VRButton.createButton(three.renderer));
   three.renderer.xr.enabled = true; // "tell your instance of WebGLRenderer to enable XR rendering"
-  // is this important to work on Quest? from ballshooter.js. Has major effect on colors/lighting
-  three.renderer.outputEncoding = THREE.sRGBEncoding;
 
   // VR controllers part 1: we decide how to render the pointer coming out of the controller.
   // We provide a Group, and the XR manager will move and rotate the whole thing as needed.
@@ -85,11 +96,11 @@ function init()
   const controller1 = three.renderer.xr.getController(0); // an empty THREE.Group for us to populate
   // controller1.addEventListener('selectstart', onSelectStart);
   // controller1.addEventListener('selectend', onSelectEnd);
-  controller1.addEventListener('connected', function(event) {
+  controller1.addEventListener('connected', function (event) {
     let controlObject = buildController(event.data); // probably just a Line
     this.add(controlObject); // add the Object3D we created to the controller THREE.Group
   });
-  controller1.addEventListener('disconnected', function () {this.remove(this.children[0]);});
+  controller1.addEventListener('disconnected', function () { this.remove(this.children[0]); });
   three.scene.add(controller1);
   // #2
   const controller2 = three.renderer.xr.getController(1); // an empty THREE.Group for us to populate
@@ -116,7 +127,8 @@ function init()
 
 three.on('update', function () {
   cube.rotateY(0.01);
-  let t = three.Time.now;
-  three.camera.position.set(Math.cos(t)*3, 1.5, Math.sin(t)*3);
-  three.camera.lookAt(new THREE.Vector3(1,1,1));
+  wasdControls.update(three.Time.delta);
+  // let t = three.Time.now;
+  // three.camera.position.set(Math.cos(t)*3, 1.5, Math.sin(t)*3);
+  // three.camera.lookAt(new THREE.Vector3(1,1,1));
 });
